@@ -1,5 +1,5 @@
 {
-  "name": "Copy of Phone AI",
+  "name": "Phone Assistant",
   "description": "A conversational voice app using Gemini Live API with a phone dialer interface.",
   "requestFramePermissions": [
     "microphone"

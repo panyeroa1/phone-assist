@@ -45,16 +45,22 @@ const Recents = () => (
   </div>
 );
 
-const Contacts = ({ onSelect, personas }: { onSelect: (persona: Persona) => void, personas: Persona[] }) => {
+const Contacts = ({ onSelect, personas, pickerMode }: { onSelect: (persona: Persona) => void, personas: Persona[], pickerMode?: boolean }) => {
   const sortedPersonas = [...personas].sort((a, b) => a.name.localeCompare(b.name));
   
   return (
     <div className="flex-1 bg-white flex flex-col h-full overflow-hidden animate-fade-in">
        {/* Header */}
        <div className="px-4 py-3 flex justify-between items-end bg-white/95 backdrop-blur border-b border-gray-200 shrink-0 sticky top-0 z-20 min-h-[55px]">
-        <button className="text-blue-500 text-[17px] mb-1">Groups</button>
-        <h1 className="text-[17px] font-semibold text-black mb-1">Contacts</h1>
-        <button className="text-blue-500 mb-1"><Icons.Plus /></button>
+        {pickerMode ? (
+            <span className="text-[17px] font-semibold text-black mb-1 mx-auto">Select Contact</span>
+        ) : (
+            <>
+                <button className="text-blue-500 text-[17px] mb-1">Groups</button>
+                <h1 className="text-[17px] font-semibold text-black mb-1">Contacts</h1>
+                <button className="text-blue-500 mb-1"><Icons.Plus /></button>
+            </>
+        )}
       </div>
       
       {/* Search Bar */}
@@ -67,16 +73,18 @@ const Contacts = ({ onSelect, personas }: { onSelect: (persona: Persona) => void
       
       {/* Contact List */}
       <div className="flex-1 overflow-y-auto">
-          {/* My Card */}
-          <div className="bg-white pl-4 pr-4 py-3 flex items-center gap-4 border-b border-gray-100">
-             <div className="w-[50px] h-[50px] rounded-full bg-gray-300 flex justify-center items-center text-white text-xl font-medium shrink-0">
-                Me
-             </div>
-             <div className="flex flex-col">
-                 <span className="font-bold text-[19px] text-black">My Card</span>
-                 <span className="text-gray-400 text-[15px]">+1 202 555 0123</span>
-             </div>
-          </div>
+          {/* My Card (Hide in picker mode) */}
+          {!pickerMode && (
+              <div className="bg-white pl-4 pr-4 py-3 flex items-center gap-4 border-b border-gray-100">
+                 <div className="w-[50px] h-[50px] rounded-full bg-gray-300 flex justify-center items-center text-white text-xl font-medium shrink-0">
+                    Me
+                 </div>
+                 <div className="flex flex-col">
+                     <span className="font-bold text-[19px] text-black">My Card</span>
+                     <span className="text-gray-400 text-[15px]">+1 202 555 0123</span>
+                 </div>
+              </div>
+          )}
 
           {/* List */}
           <div className="bg-white pl-4">
@@ -122,7 +130,7 @@ const ContactDetails = ({
 }) => {
     const [name, setName] = useState(persona.name);
     const [role, setRole] = useState(persona.role);
-    const [phone, setPhone] = useState(persona.phoneNumber || "+1 555 0199");
+    const [phone, setPhone] = useState(persona.phoneNumber || "");
     const [details, setDetails] = useState(persona.details);
     const [avatarUrl, setAvatarUrl] = useState(persona.avatarUrl);
     const [isSaving, setIsSaving] = useState(false);
@@ -155,7 +163,7 @@ const ContactDetails = ({
                 <button onClick={onBack} className="text-blue-500 flex items-center gap-1 text-[17px]">
                    <Icons.Back /> Back
                 </button>
-                <h2 className="font-semibold text-[17px]">Edit Contact</h2>
+                <h2 className="font-semibold text-[17px]">{persona.id ? 'Edit Contact' : 'New Contact'}</h2>
                 <button onClick={handleSave} disabled={isSaving} className="text-blue-500 font-bold">
                     {isSaving ? '...' : <Icons.Check />}
                 </button>
@@ -168,8 +176,8 @@ const ContactDetails = ({
                         {avatarUrl ? (
                             <img src={avatarUrl} alt={name} className="w-28 h-28 rounded-full object-cover shadow-md" />
                         ) : (
-                            <div className={`w-28 h-28 rounded-full ${persona.avatarColor} flex items-center justify-center text-white text-4xl font-bold shadow-md`}>
-                                {name.charAt(0)}
+                            <div className={`w-28 h-28 rounded-full ${persona.avatarColor || 'bg-gray-400'} flex items-center justify-center text-white text-4xl font-bold shadow-md`}>
+                                {(name || '?').charAt(0)}
                             </div>
                         )}
                         <div className="absolute bottom-0 right-0 bg-white p-2 rounded-full shadow border border-gray-200 text-blue-500">
@@ -184,7 +192,7 @@ const ContactDetails = ({
                         />
                     </div>
                     <button className="mt-3 text-blue-500 text-sm font-medium" onClick={() => fileInputRef.current?.click()}>
-                        Edit Photo
+                        {persona.id ? 'Edit Photo' : 'Add Photo'}
                     </button>
                 </div>
 
@@ -238,16 +246,39 @@ const ContactDetails = ({
                     </div>
                 </div>
                 
-                 {/* Call Button */}
-                 <div className="px-4 mt-8 mb-8">
-                     <button 
-                        onClick={() => onCall({...persona, name, role, details, phoneNumber: phone, avatarUrl})}
-                        className="w-full bg-white text-blue-500 font-semibold text-[17px] py-3 rounded-xl shadow-sm border border-gray-200 active:bg-gray-50 transition-colors flex items-center justify-center gap-2"
-                     >
-                         <Icons.Call className="w-6 h-6 fill-blue-500" />
-                         Call {name}
-                     </button>
-                 </div>
+                 {/* Call Button (Only if saved) */}
+                 {persona.id && (
+                     <div className="px-4 mt-8 mb-8">
+                         <button 
+                            onClick={() => onCall({...persona, name, role, details, phoneNumber: phone, avatarUrl})}
+                            className="w-full bg-white text-blue-500 font-semibold text-[17px] py-3 rounded-xl shadow-sm border border-gray-200 active:bg-gray-50 transition-colors flex items-center justify-center gap-2"
+                         >
+                             <Icons.Call className="w-6 h-6 fill-blue-500" />
+                             Call {name}
+                         </button>
+                     </div>
+                 )}
+            </div>
+        </div>
+    );
+};
+
+// --- Action Sheet Component ---
+const ActionSheet = ({ onClose, onNewContact, onExistingContact }: { onClose: () => void, onNewContact: () => void, onExistingContact: () => void }) => {
+    return (
+        <div className="absolute inset-0 z-50 flex flex-col justify-end bg-black/40 animate-fade-in" onClick={onClose}>
+            <div className="bg-transparent px-3 pb-6 flex flex-col gap-2 w-full max-w-md mx-auto" onClick={(e) => e.stopPropagation()}>
+                <div className="bg-white/90 backdrop-blur-md rounded-[14px] overflow-hidden">
+                    <button onClick={onNewContact} className="w-full py-4 text-[20px] text-blue-500 font-normal border-b border-gray-300 active:bg-gray-200 transition-colors">
+                        Create New Contact
+                    </button>
+                    <button onClick={onExistingContact} className="w-full py-4 text-[20px] text-blue-500 font-normal active:bg-gray-200 transition-colors">
+                        Add to Existing Contact
+                    </button>
+                </div>
+                <button onClick={onClose} className="bg-white py-4 rounded-[14px] text-[20px] font-semibold text-blue-500 active:bg-gray-200 transition-colors shadow-sm">
+                    Cancel
+                </button>
             </div>
         </div>
     );
@@ -265,6 +296,10 @@ const App = () => {
   // Data State
   const [personas, setPersonas] = useState<Persona[]>([]);
   const [selectedContact, setSelectedContact] = useState<Persona | null>(null);
+
+  // Add Number UX State
+  const [showAddActionSheet, setShowAddActionSheet] = useState(false);
+  const [contactPickerMode, setContactPickerMode] = useState(false);
 
   // Load Data
   useEffect(() => {
@@ -343,34 +378,62 @@ const App = () => {
   };
 
   const updatePersona = async (updated: Persona) => {
-      // Optimistic update
-      setPersonas(prev => prev.map(p => p.id === updated.id ? updated : p));
-      setSelectedContact(updated);
+      // Logic split: INSERT vs UPDATE
+      const isNew = !updated.id || updated.id.startsWith('new-');
+      
+      if (isNew) {
+          // INSERT logic
+          const tempId = updated.id || `temp-${Date.now()}`;
+          const newPersona = { ...updated, id: tempId };
+          setPersonas(prev => [...prev, newPersona]); // Optimistic
+          setSelectedContact(newPersona);
 
-      // If this is a mock ID (string length < 10, usually '1', '2' etc), do not attempt DB update
-      // Supabase UUIDs are 36 chars.
-      if (updated.id.length < 10) {
-          console.log("Skipping DB update for mock data (Offline Mode)");
-          return;
-      }
+          try {
+             const dbRow = {
+                name: updated.name || "New Contact",
+                role: updated.role || "",
+                voice_name: updated.voiceName || "Kore",
+                details: updated.details || "",
+                avatar_color: updated.avatarColor || "bg-gray-400",
+                phone_number: updated.phoneNumber,
+                avatar_url: updated.avatarUrl
+             };
+             const { data, error } = await supabase.from('personas').insert([dbRow]).select();
+             if (error) throw error;
+             if (data && data[0]) {
+                 // Replace optimistic with real ID
+                 const realId = data[0].id;
+                 setPersonas(prev => prev.map(p => p.id === tempId ? { ...p, id: realId } : p));
+                 setSelectedContact(prev => prev?.id === tempId ? { ...prev, id: realId } : prev);
+             }
+          } catch(e) {
+              console.error("Insert failed:", e);
+          }
 
-      try {
-        const dbRow = {
-            name: updated.name,
-            role: updated.role,
-            voice_name: updated.voiceName,
-            details: updated.details,
-            avatar_color: updated.avatarColor,
-            phone_number: updated.phoneNumber,
-            avatar_url: updated.avatarUrl
-        };
+      } else {
+          // UPDATE logic
+          setPersonas(prev => prev.map(p => p.id === updated.id ? updated : p));
+          setSelectedContact(updated);
 
-        const { error } = await supabase.from('personas').update(dbRow).eq('id', updated.id);
-        if (error) {
-            console.error("Update failed:", error.message);
-        }
-      } catch (e) {
-          console.error("Update exception:", e);
+          // Skip DB for mock IDs
+          if (updated.id.length < 10) return;
+
+          try {
+            const dbRow = {
+                name: updated.name,
+                role: updated.role,
+                voice_name: updated.voiceName,
+                details: updated.details,
+                avatar_color: updated.avatarColor,
+                phone_number: updated.phoneNumber,
+                avatar_url: updated.avatarUrl
+            };
+
+            const { error } = await supabase.from('personas').update(dbRow).eq('id', updated.id);
+            if (error) console.error("Update failed:", error.message);
+          } catch (e) {
+              console.error("Update exception:", e);
+          }
       }
   };
 
@@ -393,6 +456,42 @@ const App = () => {
     setActivePersona(undefined);
   };
 
+  // --- Add Number Handlers ---
+
+  const handleCreateNewContact = () => {
+      setShowAddActionSheet(false);
+      // Open Details with a blank persona template, pre-filling number
+      const newContact: Persona = {
+          id: `new-${Date.now()}`,
+          name: "",
+          role: "",
+          voiceName: "Kore",
+          details: "",
+          avatarColor: "bg-gray-400",
+          phoneNumber: currentDisplayNumber
+      };
+      setSelectedContact(newContact);
+  };
+
+  const handleAddToExistingContact = () => {
+      setShowAddActionSheet(false);
+      setContactPickerMode(true);
+      setActiveTab(Tab.CONTACTS);
+  };
+
+  const handleContactPick = (persona: Persona) => {
+      if (contactPickerMode) {
+          // Merge logic
+          const updated = { ...persona, phoneNumber: currentDisplayNumber };
+          updatePersona(updated);
+          setContactPickerMode(false);
+          setActiveTab(Tab.KEYPAD);
+          // Optional: Show a brief "Updated" toast
+      } else {
+          setSelectedContact(persona);
+      }
+  };
+
   return (
     <div className="w-full h-full flex flex-col relative bg-white overflow-hidden font-sans">
       
@@ -408,6 +507,15 @@ const App = () => {
           />
       )}
 
+      {/* Action Sheet Overlay */}
+      {showAddActionSheet && (
+          <ActionSheet 
+             onClose={() => setShowAddActionSheet(false)}
+             onNewContact={handleCreateNewContact}
+             onExistingContact={handleAddToExistingContact}
+          />
+      )}
+
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col overflow-hidden relative">
         <div className={`absolute inset-0 bg-white ${activeTab === Tab.RECENTS ? 'z-10' : 'z-0'}`}>
@@ -419,6 +527,7 @@ const App = () => {
                  <Keypad 
                     onCallStart={startCall} 
                     onNumberChange={setCurrentDisplayNumber} 
+                    onAddNumber={() => setShowAddActionSheet(true)}
                     initialNumber={currentDisplayNumber}
                 />
              )}
@@ -427,8 +536,9 @@ const App = () => {
         <div className={`absolute inset-0 bg-white ${activeTab === Tab.CONTACTS ? 'z-10' : 'z-0'}`}>
              {activeTab === Tab.CONTACTS && (
                  <Contacts 
-                    onSelect={(p) => setSelectedContact(p)} 
+                    onSelect={handleContactPick} 
                     personas={personas} 
+                    pickerMode={contactPickerMode}
                  />
              )}
         </div>
@@ -450,7 +560,7 @@ const App = () => {
       {/* Bottom Navigation */}
       <div className="flex justify-around items-center bg-white/95 backdrop-blur border-t border-gray-200 pb-8 pt-2 z-40 shrink-0 h-[85px] select-none">
           <button 
-            onClick={() => setActiveTab(Tab.RECENTS)}
+            onClick={() => { setActiveTab(Tab.RECENTS); setContactPickerMode(false); }}
             className={`flex flex-col items-center gap-1 w-1/3 transition-colors ${activeTab === Tab.RECENTS ? 'text-blue-500' : 'text-gray-400'}`}
           >
              <div className="w-7 h-7 flex items-center justify-center">
@@ -460,7 +570,7 @@ const App = () => {
           </button>
 
           <button 
-            onClick={() => setActiveTab(Tab.KEYPAD)}
+            onClick={() => { setActiveTab(Tab.KEYPAD); setContactPickerMode(false); }}
             className={`flex flex-col items-center gap-1 w-1/3 transition-colors ${activeTab === Tab.KEYPAD ? 'text-blue-500' : 'text-gray-400'}`}
           >
              <div className="w-7 h-7 flex items-center justify-center">
@@ -470,7 +580,7 @@ const App = () => {
           </button>
 
           <button 
-            onClick={() => setActiveTab(Tab.CONTACTS)}
+            onClick={() => { setActiveTab(Tab.CONTACTS); setContactPickerMode(false); }}
             className={`flex flex-col items-center gap-1 w-1/3 transition-colors ${activeTab === Tab.CONTACTS ? 'text-blue-500' : 'text-gray-400'}`}
           >
              <div className="w-7 h-7 flex items-center justify-center">
