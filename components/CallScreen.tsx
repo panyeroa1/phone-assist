@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef, useState } from 'react';
 import { Icons, RINGING_AUDIO_URL } from '../constants';
 import { CallState, Persona } from '../types';
@@ -53,6 +54,7 @@ const CallScreen: React.FC<CallScreenProps> = ({ name, number, callState, onEndC
       ringAudioRef.current.pause();
     }
     setCallState(CallState.CONNECTING);
+    setIsSpeaker(false); // Default to earpiece
     
     geminiServiceRef.current = new GeminiLiveService({
       apiKey: process.env.API_KEY || '',
@@ -70,12 +72,16 @@ const CallScreen: React.FC<CallScreenProps> = ({ name, number, callState, onEndC
       }
     });
 
-    // Construct system prompt
+    // Construct system prompt by replacing placeholders
     let systemInstruction = "You are a friendly phone assistant.";
     let voiceName = 'Kore';
 
     if (activePersona) {
-      systemInstruction = `${GENERAL_SYSTEM_PROMPT}\n\n${activePersona.details}`;
+      systemInstruction = GENERAL_SYSTEM_PROMPT
+        .replace(/{{PERSONA_NAME}}/g, activePersona.name)
+        .replace(/{{PERSONA_ROLE}}/g, activePersona.role)
+        .replace(/{{PERSONA_DETAILS}}/g, activePersona.details);
+      
       voiceName = activePersona.voiceName;
     }
 
@@ -116,7 +122,15 @@ const CallScreen: React.FC<CallScreenProps> = ({ name, number, callState, onEndC
   };
 
   const toggleMute = () => setIsMuted(!isMuted);
-  const toggleSpeaker = () => setIsSpeaker(!isSpeaker);
+  
+  const toggleSpeaker = () => {
+    const newState = !isSpeaker;
+    setIsSpeaker(newState);
+    if (geminiServiceRef.current) {
+        // 0.2 = Earpiece (Low), 1.0 = Speaker (High)
+        geminiServiceRef.current.setVolume(newState ? 1.0 : 0.2);
+    }
+  };
 
   const StatusDisplay = () => {
     if (callState === CallState.RINGING) return <div className="text-white/90 text-sm mb-6 animate-pulse">Calling...</div>;
