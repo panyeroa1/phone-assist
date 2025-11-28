@@ -13,7 +13,7 @@ const Recents = () => (
   <div className="flex-1 bg-white flex flex-col h-full overflow-hidden animate-fade-in">
     <div className="px-5 py-3 flex justify-between items-end bg-white/95 backdrop-blur min-h-[60px] border-b border-gray-200 shrink-0 sticky top-0 z-10">
       <h1 className="text-3xl font-bold tracking-tight">Recents</h1>
-      <button className="text-blue-500 font-medium text-base mb-1">Edit</button>
+      <button className="text-blue-500 font-medium text-base mb-1 active:opacity-50">Edit</button>
     </div>
     
     <div className="flex-1 flex flex-col overflow-y-auto">
@@ -56,9 +56,9 @@ const Contacts = ({ onSelect, personas, pickerMode }: { onSelect: (persona: Pers
             <span className="text-[17px] font-semibold text-black mb-1 mx-auto">Select Contact</span>
         ) : (
             <>
-                <button className="text-blue-500 text-[17px] mb-1">Groups</button>
+                <button className="text-blue-500 text-[17px] mb-1 active:opacity-50">Groups</button>
                 <h1 className="text-[17px] font-semibold text-black mb-1">Contacts</h1>
-                <button className="text-blue-500 mb-1"><Icons.Plus /></button>
+                <button className="text-blue-500 mb-1 active:opacity-50"><Icons.Plus /></button>
             </>
         )}
       </div>
@@ -157,32 +157,29 @@ const ContactDetails = ({
     };
 
     return (
-        <div className="absolute inset-0 z-50 bg-[#f2f2f6] flex flex-col h-full animate-slide-in">
+        <div className="absolute inset-0 z-50 bg-[#f2f2f7] flex flex-col h-full animate-slide-in font-sans">
             {/* Header */}
-            <div className="bg-white px-4 py-3 flex justify-between items-center border-b border-gray-200">
-                <button onClick={onBack} className="text-blue-500 flex items-center gap-1 text-[17px]">
-                   <Icons.Back /> Back
+            <div className="bg-white/95 backdrop-blur px-4 py-3 flex justify-between items-center border-b border-gray-300 sticky top-0 z-10">
+                <button onClick={onBack} className="text-blue-500 flex items-center gap-1 text-[17px] active:opacity-50 transition-opacity">
+                   <Icons.Back /> <span className="leading-none">Back</span>
                 </button>
-                <h2 className="font-semibold text-[17px]">{persona.id ? 'Edit Contact' : 'New Contact'}</h2>
-                <button onClick={handleSave} disabled={isSaving} className="text-blue-500 font-bold">
-                    {isSaving ? '...' : <Icons.Check />}
+                <h2 className="font-semibold text-[17px] text-black">{persona.id ? 'Edit Contact' : 'New Contact'}</h2>
+                <button onClick={handleSave} disabled={isSaving} className="text-blue-500 font-semibold text-[17px] active:opacity-50 transition-opacity disabled:opacity-50">
+                    {isSaving ? 'Saving' : 'Done'}
                 </button>
             </div>
 
             <div className="flex-1 overflow-y-auto pb-20">
                 {/* Avatar Hero */}
-                <div className="flex flex-col items-center py-8 bg-[#f2f2f6]">
-                    <div className="relative group cursor-pointer" onClick={() => fileInputRef.current?.click()}>
+                <div className="flex flex-col items-center py-8">
+                    <div className="relative group cursor-pointer active:opacity-80 transition-opacity" onClick={() => fileInputRef.current?.click()}>
                         {avatarUrl ? (
-                            <img src={avatarUrl} alt={name} className="w-28 h-28 rounded-full object-cover shadow-md" />
+                            <img src={avatarUrl} alt={name} className="w-28 h-28 rounded-full object-cover shadow-sm border border-gray-200" />
                         ) : (
-                            <div className={`w-28 h-28 rounded-full ${persona.avatarColor || 'bg-gray-400'} flex items-center justify-center text-white text-4xl font-bold shadow-md`}>
+                            <div className={`w-28 h-28 rounded-full ${persona.avatarColor || 'bg-gray-400'} flex items-center justify-center text-white text-5xl font-medium shadow-sm border border-gray-200`}>
                                 {(name || '?').charAt(0)}
                             </div>
                         )}
-                        <div className="absolute bottom-0 right-0 bg-white p-2 rounded-full shadow border border-gray-200 text-blue-500">
-                            <Icons.Camera />
-                        </div>
                         <input 
                             type="file" 
                             ref={fileInputRef} 
@@ -191,73 +188,80 @@ const ContactDetails = ({
                             onChange={handleFileChange}
                         />
                     </div>
-                    <button className="mt-3 text-blue-500 text-sm font-medium" onClick={() => fileInputRef.current?.click()}>
+                    <button className="mt-3 text-blue-500 text-[15px] font-medium" onClick={() => fileInputRef.current?.click()}>
                         {persona.id ? 'Edit Photo' : 'Add Photo'}
                     </button>
                 </div>
 
                 {/* Form Fields */}
                 <div className="px-4 space-y-6">
-                    {/* Name Section */}
-                    <div className="bg-white rounded-xl overflow-hidden shadow-sm border border-gray-200">
-                        <div className="px-4 py-3 border-b border-gray-100">
-                            <label className="block text-xs font-medium text-gray-500 uppercase mb-1">Name</label>
-                            <input 
-                                type="text" 
-                                value={name} 
-                                onChange={(e) => setName(e.target.value)}
-                                className="w-full text-[17px] outline-none font-medium"
-                                placeholder="Name"
-                            />
-                        </div>
-                         <div className="px-4 py-3 border-b border-gray-100">
-                            <label className="block text-xs font-medium text-gray-500 uppercase mb-1">Role / Job</label>
-                            <input 
-                                type="text" 
-                                value={role} 
-                                onChange={(e) => setRole(e.target.value)}
-                                className="w-full text-[17px] outline-none"
-                                placeholder="Role"
-                            />
-                        </div>
-                         <div className="px-4 py-3">
-                            <label className="block text-xs font-medium text-gray-500 uppercase mb-1">mobile</label>
-                            <input 
-                                type="tel" 
-                                value={phone} 
-                                onChange={(e) => setPhone(e.target.value)}
-                                className="w-full text-blue-500 text-[17px] outline-none"
-                                placeholder="Phone"
-                            />
+                    {/* Information Section */}
+                    <div className="bg-white rounded-xl overflow-hidden border border-gray-300">
+                        <div className="pl-4 bg-white">
+                             {/* Name */}
+                            <div className="py-3 pr-4 border-b border-gray-200 flex flex-col">
+                                <label className="text-[13px] text-blue-500 mb-0.5">Name</label>
+                                <input 
+                                    type="text" 
+                                    value={name} 
+                                    onChange={(e) => setName(e.target.value)}
+                                    className="w-full text-[17px] outline-none text-black bg-transparent placeholder-gray-400"
+                                    placeholder="First Last"
+                                />
+                            </div>
+                            {/* Role */}
+                            <div className="py-3 pr-4 border-b border-gray-200 flex flex-col">
+                                <label className="text-[13px] text-blue-500 mb-0.5">Role / Industry</label>
+                                <input 
+                                    type="text" 
+                                    value={role} 
+                                    onChange={(e) => setRole(e.target.value)}
+                                    className="w-full text-[17px] outline-none text-black bg-transparent placeholder-gray-400"
+                                    placeholder="e.g. Real Estate Agent"
+                                />
+                            </div>
+                            {/* Phone - No border for last item */}
+                            <div className="py-3 pr-4 flex flex-col">
+                                <label className="text-[13px] text-blue-500 mb-0.5">Mobile</label>
+                                <input 
+                                    type="tel" 
+                                    value={phone} 
+                                    onChange={(e) => setPhone(e.target.value)}
+                                    className="w-full text-[17px] outline-none text-black bg-transparent placeholder-gray-400"
+                                    placeholder="+1 (555) 000-0000"
+                                />
+                            </div>
                         </div>
                     </div>
 
                     {/* System Prompt Section */}
-                    <div className="bg-white rounded-xl overflow-hidden shadow-sm border border-gray-200">
-                         <div className="px-4 py-3">
-                            <label className="block text-xs font-medium text-gray-500 uppercase mb-2">System Prompt (Persona Description)</label>
+                    <div>
+                         <div className="text-[13px] text-gray-500 uppercase ml-4 mb-2 tracking-wide">System Prompt & Persona</div>
+                         <div className="bg-white rounded-xl overflow-hidden border border-gray-300 p-4 min-h-[150px]">
                             <textarea 
                                 value={details} 
                                 onChange={(e) => setDetails(e.target.value)}
-                                className="w-full text-[15px] outline-none leading-relaxed min-h-[200px] resize-none font-mono text-gray-700 bg-gray-50 p-3 rounded-lg"
-                                placeholder="Define the AI persona behavior here..."
+                                className="w-full text-[15px] outline-none leading-relaxed min-h-[200px] resize-none font-mono text-black bg-transparent placeholder-gray-400"
+                                placeholder="Define the AI persona instructions here..."
                             />
                         </div>
+                         <div className="text-[13px] text-gray-400 ml-4 mt-2">
+                            These instructions define the voice agent's behavior.
+                         </div>
                     </div>
-                </div>
                 
-                 {/* Call Button (Only if saved) */}
-                 {persona.id && (
-                     <div className="px-4 mt-8 mb-8">
-                         <button 
-                            onClick={() => onCall({...persona, name, role, details, phoneNumber: phone, avatarUrl})}
-                            className="w-full bg-white text-blue-500 font-semibold text-[17px] py-3 rounded-xl shadow-sm border border-gray-200 active:bg-gray-50 transition-colors flex items-center justify-center gap-2"
-                         >
-                             <Icons.Call className="w-6 h-6 fill-blue-500" />
-                             Call {name}
-                         </button>
-                     </div>
-                 )}
+                     {/* Call Button (Only if saved) */}
+                     {persona.id && (
+                         <div className="mt-4">
+                             <button 
+                                onClick={() => onCall({...persona, name, role, details, phoneNumber: phone, avatarUrl})}
+                                className="w-full bg-white text-blue-500 text-[17px] py-3 rounded-xl border border-gray-300 active:bg-gray-50 transition-colors flex items-center justify-center gap-2 font-medium"
+                             >
+                                 Call {name || 'Contact'}
+                             </button>
+                         </div>
+                     )}
+                </div>
             </div>
         </div>
     );
